@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src https://portal.icdfa.edu.ng; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline';">
+    
+    <title>Portfolio | Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #00ff88;
+            --danger: #ff0055;
+            --defend: #00ccff;
+            --bg: #050505;
+            --font: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg);
+            font-family: var(--font);
+        }
+
+        #portfolio-frame {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #loader-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: opacity 1.2s ease-out, visibility 1.2s; 
+        }
+
+        .battle-stage {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: opacity 0.5s ease;
+        }
+
+        .node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .node i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 5px var(--primary));
+        }
+
+        .node span {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .connection-line {
+            position: absolute;
+            top: 35%;
+            left: 30px;
+            right: 30px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1;
+        }
+
+        .hacker-node {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .hacker-node i {
+            font-size: 2.5rem;
+            color: var(--danger);
+            filter: drop-shadow(0 0 10px var(--danger));
+        }
+
+        .hacker-node span {
+            font-size: 0.7rem;
+            color: var(--danger);
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .hacker-active {
+            opacity: 1;
+        }
+
+        .shield-node {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            z-index: 20;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .shield-node i {
+            font-size: 3rem;
+            color: var(--defend);
+            filter: drop-shadow(0 0 15px var(--defend));
+        }
+
+        .shield-active {
+            transform: translateX(-50%) scale(1);
+        }
+
+        #success-badge {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #success-badge i {
+            font-size: 5rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 20px var(--primary));
+            margin-bottom: 1rem;
+        }
+
+        #success-badge span {
+            font-size: 1.2rem;
+            color: var(--primary);
+            letter-spacing: 5px;
+            font-weight: bold;
+        }
+
+        .packet {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .data-packet {
+            top: 34%;
+            left: 30px;
+            background: var(--primary);
+            box-shadow: 0 0 5px var(--primary);
+            animation: transmit 1.5s linear forwards;
+        }
+
+        .attack-packet {
+            top: -30px;
+            left: 50%;
+            background: var(--danger);
+            box-shadow: 0 0 5px var(--danger);
+            animation: attack 0.8s linear forwards;
+        }
+
+        .blocked-explosion {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--defend);
+            border-radius: 50%;
+            opacity: 1;
+            animation: explode 0.4s ease-out forwards;
+        }
+
+        @keyframes transmit {
+            0% { left: 40px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 260px; opacity: 0; }
+        }
+
+        @keyframes attack {
+            0% { top: -20px; opacity: 1; }
+            100% { top: 35%; opacity: 1; }
+        }
+
+        @keyframes explode {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-color: white;}
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; border-color: var(--defend);}
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .console-container {
+            width: 300px;
+            height: 60px;
+            background: #111;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 0.7rem;
+            color: #aaa;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            border-radius: 4px;
+            transition: opacity 0.5s ease;
+        }
+        
+        .log-entry {
+            margin-bottom: 2px;
+        }
+        .log-entry.danger { color: var(--danger); }
+        .log-entry.success { color: var(--primary); }
+        .log-entry.info { color: var(--defend); }
+
+        .loaded #loader-screen {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loaded #portfolio-frame {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader-screen">
+        <div class="battle-stage" id="battle-stage" aria-hidden="true">
+            <div class="hacker-node" id="hacker">
+                <i class="fas fa-user-secret"></i>
+                <span>INTRUDER</span>
+            </div>
+            <div class="node">
+                <i class="fas fa-laptop-code"></i>
+                <span>SOURCE</span>
+            </div>
+            <div class="connection-line"></div>
+            <div id="particles-layer"></div>
+            <div class="shield-node" id="shield">
+                <i class="fas fa-shield-virus"></i>
+            </div>
+            <div class="node">
+                <i class="fas fa-server"></i>
+                <span>DEST</span>
+            </div>
+        </div>
+        <div id="success-badge" aria-hidden="true">
+            <i class="fas fa-lock"></i>
+            <span>CONNECTION SECURED</span>
+        </div>
+        <div class="console-container" id="console"></div>
+        <div id="monitoring-text" style="margin-top:10px; font-size: 0.8rem; color: #555;">SOC MONITORING ACTIVE</div>
+    </div>
+
+    <iframe id="portfolio-frame" title="Portfolio Content" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+
+    <script>
+        const encodedUrl = "aHR0cHM6Ly9wb3J0YWwuaWNkZmEuZWR1Lm5nL3BvcnRhbC9wb3J0Zm9saW8tdmlldy5waHA/c2x1Zz1jeWJlci1zZWN1cml0eS1wb3J0Zm9saW8mdG9rZW49Y2NlNzE4NTUyZjdlMmY2ODQ4NTgxMGMzNzRlOWY4Yzc=";
+        const targetUrl = atob(encodedUrl);
+        
+        const frame = document.getElementById('portfolio-frame');
+        const particlesLayer = document.getElementById('particles-layer');
+        const consoleDiv = document.getElementById('console');
+        const hackerNode = document.getElementById('hacker');
+        const shieldNode = document.getElementById('shield');
+        const battleStage = document.getElementById('battle-stage');
+        const successBadge = document.getElementById('success-badge');
+        const monitoringText = document.getElementById('monitoring-text');
+
+        frame.src = targetUrl;
+
+        function log(msg, type = '') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.textContent = `> ${msg}`;
+            consoleDiv.prepend(div);
+        }
+
+        function spawnDataPacket() {
+            const p = document.createElement('div');
+            p.className = 'packet data-packet';
+            particlesLayer.appendChild(p);
+            setTimeout(() => p.remove(), 1500);
+        }
+
+        function spawnAttackPacket() {
+            const p = document.createElement('div');
+            p.className = 'packet attack-packet';
+            particlesLayer.appendChild(p);
+            setTimeout(() => {
+                p.remove();
+                const exp = document.createElement('div');
+                exp.className = 'blocked-explosion';
+                particlesLayer.appendChild(exp);
+                setTimeout(() => exp.remove(), 400);
+            }, 800);
+        }
+
+        log("ESTABLISHING HANDSHAKE...");
+        const dataInterval = setInterval(spawnDataPacket, 400);
+
+        setTimeout(() => {
+            hackerNode.classList.add('hacker-active');
+            log("WARNING: UNKNOWN IP DETECTED", "danger");
+            log("INTRUSION ATTEMPT BLOCKED", "danger");
+            
+            const attackInterval = setInterval(spawnAttackPacket, 300);
+
+            setTimeout(() => {
+                shieldNode.classList.add('shield-active');
+                log("SOC DEFENSE ENGAGED", "info");
+                log("FIREWALL RULES UPDATED", "info");
+                
+                setTimeout(() => {
+                    clearInterval(attackInterval);
+                    clearInterval(dataInterval);
+                    
+                    battleStage.style.display = 'none';
+                    consoleDiv.style.display = 'none';
+                    monitoringText.style.display = 'none';
+                    successBadge.style.display = 'flex';
+
+                    setTimeout(dissolveScreen, 1500);
+
+                }, 2000);
+
+            }, 800);
+
+        }, 1200);
+
+        function dissolveScreen() {
+            document.body.classList.add('loaded');
+            setTimeout(() => {
+                document.title = "Rahul Kumar Jagat | Portfolio";
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
